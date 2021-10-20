@@ -1,0 +1,76 @@
+---
+title: "CI Plot"
+author: "Shengwu Shang"
+date: "7/19/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+Collecting many samples programmatically
+Using R, we’re going to collect many samples to learn more about how sample means and confidence intervals vary from one sample to another.
+
+Here is the rough outline:
+
+Obtain a random sample.
+
+Calculate the sample’s mean and standard deviation, and use these to calculate and store the lower and upper bounds of the confidence intervals.
+
+Repeat these steps 50 times.
+
+We can accomplish this using the rep_sample_n function. (This is a function of oilabs package!) The following lines of code takes 50 random samples of size n from population (and remember we defined n=60 earlier), and computes the upper and lower bounds of the confidence intervals based on these samples.
+
+
+```{r setup, include=FALSE}
+#n=100
+#library(purrr)
+#set.seed(0815)
+#population=rbernoulli(200000, p = 0.748)
+#z_star_95 <- qnorm(0.975)
+#install.packages(oilabs)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r }
+
+#summary(ci_data_new)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=TRUE}
+library(purrr)
+set.seed(385)
+samples <- 100
+n <- 200
+ll <- numeric(samples)
+ul <- numeric(samples)
+xbar <- numeric(samples)
+for (i in 1:samples)
+{
+  xbar[i] <- mean(rbernoulli(200, p = 0.748))
+  ll[i] <- xbar[i] - qnorm(.95)*sqrt(xbar[i]*(1-xbar[i])/n)
+  ul[i] <- xbar[i] + qnorm(.95)*sqrt(xbar[i]*(1-xbar[i])/n)
+}
+
+capture_p = ifelse(ll < .748 & ul > .748, "yes", "no")
+
+ci_data_new=data.frame(rep=1:100,trueP=xbar, ul=ul,ll=ll,capture_p=capture_p)
+summary(ci_data_new)
+library(utils)
+head(ci_data_new)
+library(ggplot2)
+qplot(data = ci_data_new, x = rep, y = trueP,color=capture_p) +
+  geom_errorbar(aes(ymin =ll, ymax = ul)) + 
+  geom_hline(aes(yintercept =.748), color = "darkgray") + # draw vertical line
+  coord_flip()
+ 
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
